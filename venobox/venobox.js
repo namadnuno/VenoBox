@@ -642,12 +642,18 @@
                     // set rel=0 to hide related videos at the end of YT + optional autoplay
                     var stringAutoplay = autoplay ? "?rel=0&autoplay=1" : "?rel=0";
                     var queryvars = stringAutoplay + getUrlParameter(dest);
+                    
 
                     if (videoObj.type == 'vimeo') {
                       player = 'https://player.vimeo.com/video/';
                     } else if (videoObj.type == 'youtube') {
                       player = 'https://www.youtube.com/embed/';
+                    } else if (videoObj.type == 'facebook') {
+                      content.html('<iframe class="venoframe vbvid" webkitallowfullscreen mozallowfullscreen allowfullscreen allow="autoplay" frameborder="0" src="https://www.facebook.com/plugins/video.php?href='+ dest +'" scrolling="no" frameborder="0" allowTransparency="true" allowFullScreen="true"></iframe>');
+                      updateoverlay();
+                      return;
                     }
+
                     content.html('<iframe class="venoframe vbvid" webkitallowfullscreen mozallowfullscreen allowfullscreen allow="autoplay" frameborder="0" src="'+player+videoObj.id+queryvars+'"></iframe>');
                     updateoverlay();
                 }
@@ -656,16 +662,26 @@
                 * Parse Youtube or Vimeo videos and get host & ID
                 */
                 function parseVideo (url) {
-                    url.match(/(http:|https:|)\/\/(player.|www.)?(vimeo\.com|youtu(be\.com|\.be|be\.googleapis\.com))\/(video\/|embed\/|watch\?v=|v\/)?([A-Za-z0-9._%-]*)(\&\S+)?/);
-                    var type;
-                    if (RegExp.$3.indexOf('youtu') > -1) {
+                    var type, id;
+
+                    if(url.indexOf('facebook.com') > 1) {
+                      type = 'facebook';
+                      id = url.split('/').reverse()[1];
+                    } else {
+                      url.match(/(http:|https:|)\/\/(player.|www.)?(vimeo\.com|youtu(be\.com|\.be|be\.googleapis\.com|facebook.com))\/(video\/|embed\/|watch\?v=|v\/)?([A-Za-z0-9._%-]*)(\&\S+)?/);
+
+                      if (RegExp.$3.indexOf('youtu') > -1) {
                         type = 'youtube';
-                    } else if (RegExp.$3.indexOf('vimeo') > -1) {
+                      } else if (RegExp.$3.indexOf('vimeo') > -1) {
                         type = 'vimeo';
+                      }
+
+                      id = RegExp.$6;
                     }
+                    
                     return {
                         type: type,
-                        id: RegExp.$6
+                        id: id
                     };
                 }
 
